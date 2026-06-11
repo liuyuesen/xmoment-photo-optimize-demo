@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>xMoment · 云侧照片优化 Demo</title>
+<title>xMoment · 高光 / 消除 / 优化 Demo</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body {
@@ -1102,38 +1102,32 @@ html, body {
 <body>
 
 <style>
-/* ====== 云侧照片优化 demo · 追加样式 ====== */
-.detail-page{z-index:22;}
-.opt-entry{padding:13px 14px;background:#0f1320;border-top:1px solid rgba(255,255,255,.06);}
-.opt-entry .btn{width:100%;padding:13px 0;font-size:14px;border:none;border-radius:12px;font-weight:600;cursor:pointer;}
-.btn-optimize{background:linear-gradient(135deg,#7c5bff,#5b8cff);color:#fff;box-shadow:0 6px 18px rgba(91,140,255,.35);}
-.opt-entry .sub{font-size:10.5px;color:rgba(255,255,255,.45);text-align:center;margin-top:7px;}
-
-/* 结果页 */
-.opt-page{position:absolute;inset:0;background:#0b0d12;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:38;}
-.opt-page.show{transform:none;}
-.opt-stage{flex:1;position:relative;overflow:hidden;background:#000;}
-.opt-img{position:absolute;inset:0;background:url(assets/highlight.jpg) center/cover;transition:filter .25s;}
-.opt-tag{position:absolute;top:12px;left:12px;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(0,0,0,.5);color:#fff;backdrop-filter:blur(6px);}
-.opt-tag.cmp{background:rgba(255,255,255,.85);color:#111;}
-.opt-actions{padding:13px 14px;display:flex;gap:9px;background:#0f1320;border-top:1px solid rgba(255,255,255,.06);}
-.opt-actions .btn{flex:1;padding:12px 0;font-size:13px;border-radius:11px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#e8ecf6;}
-.opt-actions .btn.primary{background:linear-gradient(135deg,#7c5bff,#5b8cff);border:none;color:#fff;}
-.opt-actions .btn.danger{color:#ff8a8a;border-color:rgba(255,138,138,.35);background:rgba(255,90,90,.1);}
-.opt-actions .btn.cmp{user-select:none;}
-
-/* 处理中 · 前台阻塞遮罩 */
-.opt-processing{position:absolute;inset:0;background:rgba(6,8,14,.92);backdrop-filter:blur(3px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:15px;z-index:55;}
-.opt-processing.show{display:flex;}
-.opt-spinner{width:52px;height:52px;border-radius:50%;border:4px solid rgba(255,255,255,.14);border-top-color:#8aa0ff;animation:co-spin 1s linear infinite;}
+/* ====== 高光/消除/优化 合并 demo · 追加样式 ====== */
+.detail-page{z-index:22;display:flex;flex-direction:column;}
+/* 路人叠加层（演示消除） */
+.bystander{position:absolute;right:15%;bottom:0;height:60%;display:flex;align-items:flex-end;justify-content:center;font-size:46px;line-height:1;filter:drop-shadow(0 3px 7px rgba(0,0,0,.55));opacity:.95;transition:opacity .45s ease;pointer-events:none;z-index:2;}
+.bystander .lbl{position:absolute;top:-4px;left:50%;transform:translateX(-50%);background:rgba(255,80,80,.92);color:#fff;font-size:9px;padding:1px 6px;border-radius:7px;white-space:nowrap;}
+.detail-frame.erased .bystander{opacity:0;}
+/* 编辑页底部操作条 */
+.editor-tags{padding:6px 12px 0;display:flex;gap:6px;flex-wrap:wrap;background:rgba(0,0,0,.55);}
+.editor-tags .tg{font-size:10.5px;padding:2px 8px;border-radius:10px;font-weight:600;}
+.editor-tags .tg.erase{background:rgba(91,140,255,.22);color:#bcd0ff;}
+.editor-tags .tg.opt{background:rgba(124,91,255,.25);color:#d9ccff;}
+.editor-actions{padding:10px;display:flex;flex-wrap:wrap;gap:7px;background:#0f1320;border-top:1px solid rgba(255,255,255,.07);}
+.ebtn{flex:1 1 30%;min-width:62px;padding:10px 0;border-radius:10px;font-size:12.5px;font-weight:600;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#e8ecf6;cursor:pointer;text-align:center;user-select:none;transition:opacity .2s;}
+.ebtn.primary{background:linear-gradient(135deg,#7c5bff,#5b8cff);border:none;color:#fff;}
+.ebtn.disabled{opacity:.38;pointer-events:none;}
+/* 前台处理遮罩 */
+.proc-mask{position:absolute;inset:0;background:rgba(6,8,14,.92);backdrop-filter:blur(3px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:55;}
+.proc-mask.show{display:flex;}
+.proc-spin{width:50px;height:50px;border-radius:50%;border:4px solid rgba(255,255,255,.14);border-top-color:#8aa0ff;animation:co-spin 1s linear infinite;}
 @keyframes co-spin{to{transform:rotate(360deg);}}
-.opt-processing .pt{font-size:14.5px;font-weight:600;color:#fff;}
-.opt-processing .ps{font-size:11.5px;color:rgba(255,255,255,.62);max-width:210px;text-align:center;line-height:1.65;}
-.opt-pbar{width:184px;height:6px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;}
-.opt-pbar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#7c5bff,#5b8cff);transition:width .25s linear;}
-.opt-lock{font-size:10.5px;color:#ffd27d;background:rgba(255,180,60,.12);border:1px solid rgba(255,180,60,.3);padding:5px 12px;border-radius:20px;}
-
-/* 无网络提示 */
+.proc-mask .pt{font-size:14.5px;font-weight:600;color:#fff;text-align:center;padding:0 20px;}
+.proc-mask .ps{font-size:11.5px;color:rgba(255,255,255,.62);max-width:220px;text-align:center;line-height:1.6;}
+.proc-bar{width:184px;height:6px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;}
+.proc-bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#7c5bff,#5b8cff);transition:width .2s linear;}
+.proc-lock{font-size:10.5px;color:#ffd27d;background:rgba(255,180,60,.12);border:1px solid rgba(255,180,60,.3);padding:5px 12px;border-radius:20px;}
+/* 无网提示 */
 .net-prompt{position:absolute;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:26px;}
 .net-prompt.show{display:flex;}
 .net-prompt .card{background:#1a1e28;border-radius:16px;padding:24px 18px;text-align:center;max-width:240px;border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 50px rgba(0,0,0,.5);}
@@ -1142,215 +1136,116 @@ html, body {
 .net-prompt .ds{font-size:12px;color:rgba(255,255,255,.6);line-height:1.65;margin-bottom:18px;}
 .net-prompt .btn{width:100%;padding:11px 0;border:none;border-radius:11px;background:linear-gradient(135deg,#7c5bff,#5b8cff);color:#fff;font-weight:600;font-size:13px;cursor:pointer;}
 .net-prompt .lnk{display:block;margin-top:10px;font-size:11.5px;color:rgba(255,255,255,.5);cursor:pointer;}
-
-/* 相册角标 ✨ 已优化 */
-.cell-opt{position:absolute;top:6px;left:6px;font-size:13px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));}
-.opt-detail-badge{position:absolute;top:10px;right:10px;padding:4px 9px;border-radius:14px;font-size:10.5px;font-weight:600;background:rgba(124,91,255,.85);color:#fff;}
+/* 相册角标 */
+.cell-opt,.cell-erase{position:absolute;top:6px;font-size:12px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));}
+.cell-opt{left:6px;}
+.cell-erase{left:24px;}
 </style>
 
 <div class="stage">
 
   <!-- ============= 左上 HUD ============= -->
   <div class="hud">
-    <div class="hud-title">xMoment · 云侧照片优化 Demo</div>
-    <div class="hud-sub">按 2026-06-11 版 PRD：端侧高光（松手即出）+ 相册内「照片优化」手动入口。云侧仅做照片优化，不再选帧、不自动上传、无队列。</div>
+    <div class="hud-title">xMoment · 高光 / 消除 / 优化 Demo</div>
+    <div class="hud-sub">长按高光（端侧出帧）→ 自动消除（联网云端 / 无网端侧）→ 高光编辑页。相册照片详情 = 消除 + 照片优化 + 撤销 统一编辑。含全链路异常处理。</div>
 
     <div class="hud-section">状态轴 <span class="badge-cur" id="netCurrent">已联网</span></div>
     <div class="state-list" id="stateList">
-      <div class="step" data-state="IDLE">
-        <div class="t">t=0</div><div class="dot"></div>
-        <div><b>取景器就绪</b><br><span style="opacity:0.7">长按物理快门 / 点🖼️进相册</span></div>
-      </div>
-      <div class="step" data-state="PRESSING">
-        <div class="t">+0s</div><div class="dot"></div>
-        <div><b>长按拍摄中</b><br><span style="opacity:0.7">5s 进度环倒计时</span></div>
-      </div>
-      <div class="step" data-state="DEVICE_PROCESSING">
-        <div class="t">+0.2s</div><div class="dot"></div>
-        <div><b>端侧生成 3 张高光帧</b><br><span style="opacity:0.7">≤200ms · 无需联网</span></div>
-      </div>
-      <div class="step" data-state="DEVICE_READY">
-        <div class="t">+0.5s</div><div class="dot"></div>
-        <div><b>端侧高光入相册</b></div>
-      </div>
-      <div class="step" data-state="ALBUM_OPEN">
-        <div class="t">·</div><div class="dot"></div>
-        <div><b>相册网格</b></div>
-      </div>
-      <div class="step" data-state="PHOTO_OPEN">
-        <div class="t">·</div><div class="dot"></div>
-        <div><b>照片详情页</b><br><span style="opacity:0.7">底部「✨ 照片优化」入口</span></div>
-      </div>
-      <div class="step" data-state="OPT_PROCESSING">
-        <div class="t">点击触发</div><div class="dot"></div>
-        <div><b>云侧优化中 · 前台等待</b><br><span style="opacity:0.7">不可退出后台 · 无队列</span></div>
-      </div>
-      <div class="step" data-state="OPT_RESULT">
-        <div class="t">完成</div><div class="dot"></div>
-        <div><b>结果页</b><br><span style="opacity:0.7">保存 / 对比原图 / 放弃</span></div>
-      </div>
+      <div class="step" data-state="IDLE"><div class="t">t=0</div><div class="dot"></div><div><b>取景器就绪</b><br><span style="opacity:.7">长按快门 / 点🖼️进相册</span></div></div>
+      <div class="step" data-state="PRESSING"><div class="t">+0s</div><div class="dot"></div><div><b>长按拍摄中</b></div></div>
+      <div class="step" data-state="RECOG"><div class="t">+0.2s</div><div class="dot"></div><div><b>端侧识别高光帧</b><br><span style="opacity:.7">≤200ms · 异常E1-E3</span></div></div>
+      <div class="step" data-state="AUTO_ERASE"><div class="t">自动</div><div class="dot"></div><div><b>自动消除</b><br><span style="opacity:.7">联网云端 / 无网端侧 · 异常E4-E7</span></div></div>
+      <div class="step" data-state="EDIT"><div class="t">·</div><div class="dot"></div><div><b>编辑页</b><br><span style="opacity:.7">消除/优化/撤销/保存</span></div></div>
+      <div class="step" data-state="PROCESSING"><div class="t">前台</div><div class="dot"></div><div><b>处理中 · 前台等待</b><br><span style="opacity:.7">不可退后台·无队列</span></div></div>
+      <div class="step" data-state="DONE"><div class="t">完成</div><div class="dot"></div><div><b>已保存</b></div></div>
     </div>
 
     <div class="hud-section">网络场景</div>
     <div class="net-options" id="netOptions">
-      <div class="net-opt active" data-net="online">
-        <div class="code">ONLINE</div>已联网
-        <div style="font-size:9.5px;color:#6b7390;margin-top:2px;">可云侧优化</div>
-      </div>
-      <div class="net-opt" data-net="offline">
-        <div class="code">OFFLINE</div>无网络
-        <div style="font-size:9.5px;color:#6b7390;margin-top:2px;">点优化→提示连网</div>
-      </div>
+      <div class="net-opt active" data-net="online"><div class="code">ONLINE</div>已联网<div style="font-size:9.5px;color:#6b7390;margin-top:2px;">消除走云端·可优化</div></div>
+      <div class="net-opt" data-net="offline"><div class="code">OFFLINE</div>无网络<div style="font-size:9.5px;color:#6b7390;margin-top:2px;">消除走端侧·优化提示连网</div></div>
     </div>
 
     <div class="hud-section">异常模拟</div>
-    <div class="toggle-row">
-      <div>
-        <div class="lbl">模拟云端处理失败</div>
-        <div class="desc">重试 1 次仍失败 → 保留原图</div>
-      </div>
-      <div class="switch">
-        <input type="checkbox" id="failToggle">
-        <label for="failToggle"></label>
-      </div>
-    </div>
+    <div class="toggle-row"><div><div class="lbl">高光识别失败/中断</div><div class="desc">E2/E3 · 不出高光，保留原视频</div></div><div class="switch"><input type="checkbox" id="simRecog"><label for="simRecog"></label></div></div>
+    <div class="toggle-row"><div><div class="lbl">云端消除失败</div><div class="desc">E4 · 重试1次→降级端侧消除</div></div><div class="switch"><input type="checkbox" id="simEraseFail"><label for="simEraseFail"></label></div></div>
+    <div class="toggle-row"><div><div class="lbl">消除无可消除目标</div><div class="desc">E5 · 保留原图，消除键不灰</div></div><div class="switch"><input type="checkbox" id="simNoTarget"><label for="simNoTarget"></label></div></div>
+    <div class="toggle-row"><div><div class="lbl">照片优化失败</div><div class="desc">E9 · 重试1次→保留原图</div></div><div class="switch"><input type="checkbox" id="simOptFail"><label for="simOptFail"></label></div></div>
 
-    <div class="btn-row">
-      <button class="action-btn reset" id="resetBtn">↺ 重置</button>
-    </div>
+    <div class="btn-row"><button class="action-btn reset" id="resetBtn">↺ 重置</button></div>
 
     <div class="help-text">
-      <b style="color:#fff;">端侧高光（保留能力）</b><br>
-      · 长按红色快门 ≥ 1s → 端侧直出 3 帧高光<br>
-      · 点缩略图 / 相册项 → 帧浏览<br>
-      <br>
-      <b style="color:#fff;">云侧照片优化（手动）</b><br>
-      · 相册照片详情 → 点 <kbd>✨ 照片优化</kbd><br>
-      · 无网 → 提示「请先连接网络」，停留当前页<br>
-      · 有网 → 上传并优化，<b>前台等待</b>，处理中不可退出后台<br>
-      · 完成 → 本页出结果：<kbd>保存</kbd> / 按住<kbd>对比原图</kbd> / <kbd>放弃</kbd><br>
-      · 无「回相机选帧」、无上传队列
+      <b style="color:#fff;">长按高光（取景器）</b><br>
+      · 长按红快门≥1s → 端侧出帧 → <b>自动消除</b> → 高光编辑页<br>
+      · 编辑页：消除（已自动→灰）/ 撤销 / 保存 / 按住对比原图<br>
+      · 此处<b>无照片优化</b><br><br>
+      <b style="color:#fff;">相册照片详情（统一编辑）</b><br>
+      · 消除 + 照片优化 + 撤销 + 保存<br>
+      · 用过的功能键变灰；撤销回退上一步；无可撤销时撤销灰<br>
+      · 照片优化：无网弹连网提示；有网前台处理<br><br>
+      <span style="opacity:.7;">异常用左侧开关 + 网络场景组合演示。</span>
     </div>
   </div>
 
   <!-- ============= 中央 相机 ============= -->
   <div class="camera-wrap">
     <div class="camera" id="camera">
-
       <div class="screen" id="screen">
-        <!-- 顶部状态栏 -->
         <div class="topbar" id="topbar">
-          <div class="badge" id="modeBadge">
-            <span class="dot"></span>
-            <span>高光长按</span>
-          </div>
-          <div class="status-right">
-            <span class="net-badge" id="netBadge">已联网</span>
-            <span>🔋</span>
-            <span>📄 9/10</span>
-          </div>
+          <div class="badge" id="modeBadge"><span class="dot"></span><span>高光长按</span></div>
+          <div class="status-right"><span class="net-badge" id="netBadge">已联网</span><span>🔋</span><span>📄 9/10</span></div>
         </div>
 
-        <!-- 取景器 -->
         <div class="viewfinder" id="viewfinder">
           <img class="vf-media vf-still" src="assets/highlight.jpg" alt="">
-          <video class="vf-media vf-video" id="vfVideo" src="assets/recording.mp4"
-                 muted loop playsinline preload="auto"></video>
-
+          <video class="vf-media vf-video" id="vfVideo" src="assets/recording.mp4" muted loop playsinline preload="auto"></video>
           <div class="focus-frame" id="focusFrame"></div>
-
-          <div class="rec-indicator" id="recIndicator">
-            <span class="dot"></span><span>双路录制 · 4K + AI 子流</span>
-          </div>
-
+          <div class="rec-indicator" id="recIndicator"><span class="dot"></span><span>双路录制 · 4K + AI 子流</span></div>
           <div class="countdown" id="countdown">5</div>
-
-          <div class="vf-processing" id="vfProcessing">
-            <div class="spinner"></div>
-            <div class="label">端侧 AI 生成高光帧</div>
-          </div>
-
+          <div class="vf-processing" id="vfProcessing"><div class="spinner"></div><div class="label" id="vfProcLabel">端侧 AI 识别高光帧</div></div>
           <div class="vf-hint" id="vfHint">长按红色物理快门 / 点 🖼️ 进相册</div>
-
-          <div class="thumb-anchor">
-            <div class="thumb-slot" id="thumbSlot">
-              <div class="thumb" id="thumb"></div>
-              <div class="count-badge" id="countBadge">3</div>
-            </div>
-          </div>
+          <div class="thumb-anchor"><div class="thumb-slot" id="thumbSlot"><div class="thumb" id="thumb"></div><div class="count-badge" id="countBadge">3</div></div></div>
         </div>
 
-        <div class="left-tools">
-          <button class="tool-btn">⚙</button>
-          <button class="tool-btn">⚡</button>
-        </div>
-        <div class="right-tools">
-          <button class="tool-btn zoom-btn">1x</button>
-          <button class="tool-btn album-btn" id="openAlbumBtn" title="相册">🖼</button>
-        </div>
+        <div class="left-tools"><button class="tool-btn">⚙</button><button class="tool-btn">⚡</button></div>
+        <div class="right-tools"><button class="tool-btn zoom-btn">1x</button><button class="tool-btn album-btn" id="openAlbumBtn" title="相册">🖼</button></div>
+        <div class="mode-bar"><span class="mode-item">视频</span><span class="mode-item active">高光长按</span><span class="mode-item">拍照</span><span class="mode-item">即拍即得</span></div>
 
-        <div class="mode-bar">
-          <span class="mode-item">视频</span>
-          <span class="mode-item active">高光长按</span>
-          <span class="mode-item">拍照</span>
-          <span class="mode-item">即拍即得</span>
-        </div>
-
-        <!-- ============ 相册网格页 ============ -->
+        <!-- 相册 -->
         <div class="screen-page album-page" id="albumPage">
-          <div class="page-header">
-            <div class="page-back" id="albumBack">‹</div>
-            <div class="page-title">相册 · <span id="albumCount">0</span> 个素材</div>
-          </div>
+          <div class="page-header"><div class="page-back" id="albumBack">‹</div><div class="page-title">相册 · <span id="albumCount">0</span> 个素材</div></div>
           <div class="album-grid" id="albumGrid"></div>
         </div>
 
-        <!-- ============ 照片/高光详情页 ============ -->
+        <!-- 统一编辑页（高光 / 照片） -->
         <div class="screen-page detail-page" id="detailPage">
-          <div class="page-header">
-            <div class="page-back" id="detailBack">‹</div>
-            <div class="page-title" id="detailTitle">照片</div>
-          </div>
+          <div class="page-header"><div class="page-back" id="detailBack">‹</div><div class="page-title" id="detailTitle">编辑</div></div>
+          <div class="editor-tags" id="editorTags"></div>
           <div class="detail-stage" id="detailStage">
             <div class="detail-frames" id="detailFrames"></div>
             <div class="swipe-hint l" id="prevFrameBtn">‹</div>
             <div class="swipe-hint r" id="nextFrameBtn">›</div>
-            <div class="opt-detail-badge" id="detailOptBadge" style="display:none;">✨ 已优化</div>
           </div>
           <div class="detail-thumbs" id="detailThumbs"></div>
-          <div class="opt-entry">
-            <button class="btn btn-optimize" id="optimizeBtn">✨ 照片优化</button>
-            <div class="sub" id="optEntrySub">云侧生成式大师风格优化 · 不改变人物形象</div>
+          <div class="editor-actions">
+            <div class="ebtn" id="eraseBtn">🩹 消除</div>
+            <div class="ebtn" id="optimizeBtn">✨ 照片优化</div>
+            <div class="ebtn" id="undoBtn">↶ 撤销</div>
+            <div class="ebtn" id="compareBtn">👁 按住对比原图</div>
+            <div class="ebtn primary" id="saveBtn">保存</div>
           </div>
         </div>
 
-        <!-- ============ 照片优化结果页 ============ -->
-        <div class="opt-page" id="optPage">
-          <div class="page-header">
-            <div class="page-back" id="optBack">‹</div>
-            <div class="page-title">照片优化结果</div>
-          </div>
-          <div class="opt-stage">
-            <div class="opt-img" id="optImg"></div>
-            <div class="opt-tag" id="optTag">✨ 大师风格优化版</div>
-          </div>
-          <div class="opt-actions">
-            <button class="btn cmp" id="optCompareBtn">按住 对比原图</button>
-            <button class="btn danger" id="optDiscardBtn">放弃</button>
-            <button class="btn primary" id="optSaveBtn">保存</button>
-          </div>
+        <!-- 前台处理遮罩 -->
+        <div class="proc-mask" id="procMask">
+          <div class="proc-spin"></div>
+          <div class="pt" id="procTitle">处理中…</div>
+          <div class="ps" id="procSub">请保持在本页</div>
+          <div class="proc-bar"><i id="procBar"></i></div>
+          <div class="proc-lock">🔒 处理中不可退出后台 · 无后台队列</div>
         </div>
 
-        <!-- 处理中 · 前台阻塞遮罩 -->
-        <div class="opt-processing" id="optProcessing">
-          <div class="opt-spinner"></div>
-          <div class="pt" id="optProcTitle">云侧照片优化中…</div>
-          <div class="ps" id="optProcSub">正在上传并生成大师风格照片，请保持在本页</div>
-          <div class="opt-pbar"><i id="optProcBar"></i></div>
-          <div class="opt-lock">🔒 处理中不可退出后台 · 无后台队列</div>
-        </div>
-
-        <!-- 无网络提示 -->
+        <!-- 无网提示 -->
         <div class="net-prompt" id="netPrompt">
           <div class="card">
             <div class="ic">📶</div>
@@ -1363,368 +1258,256 @@ html, body {
 
       </div>
 
-      <!-- 物理按键区 -->
       <div class="keys">
         <div class="dial"></div>
         <div class="shutter-wrap">
-          <div class="shutter" id="shutter">
-            <div class="ring"></div>
-          </div>
-          <svg class="progress-ring" viewBox="0 0 116 116">
-            <circle class="bg" cx="58" cy="58" r="50"/>
-            <circle class="fg" id="ringFg" cx="58" cy="58" r="50"/>
-          </svg>
+          <div class="shutter" id="shutter"><div class="ring"></div></div>
+          <svg class="progress-ring" viewBox="0 0 116 116"><circle class="bg" cx="58" cy="58" r="50"/><circle class="fg" id="ringFg" cx="58" cy="58" r="50"/></svg>
         </div>
       </div>
-
       <div class="lens-mark">xMoment · 28-240mm</div>
     </div>
-    <div class="camera-caption">↑ 按住快门出端侧高光 / 点 🖼️ 进相册 → 照片详情点「✨ 照片优化」体验云侧优化</div>
+    <div class="camera-caption">↑ 长按快门：端侧高光→自动消除→编辑页 · 点 🖼️ 进相册编辑（消除/优化/撤销）</div>
   </div>
 
   <div class="toast" id="toast"></div>
-
 </div>
 
 <script>
-const $ = (id) => document.getElementById(id);
+const $=(id)=>document.getElementById(id);
+const shutter=$('shutter'),ringFg=$('ringFg'),viewfinder=$('viewfinder'),vfVideo=$('vfVideo'),
+  vfHint=$('vfHint'),vfProcessing=$('vfProcessing'),vfProcLabel=$('vfProcLabel'),countdown=$('countdown'),
+  recIndicator=$('recIndicator'),focusFrame=$('focusFrame'),thumb=$('thumb'),thumbSlot=$('thumbSlot'),
+  countBadge=$('countBadge'),toast=$('toast'),netOptions=$('netOptions'),netCurrent=$('netCurrent'),netBadge=$('netBadge'),
+  simRecog=$('simRecog'),simEraseFail=$('simEraseFail'),simNoTarget=$('simNoTarget'),simOptFail=$('simOptFail'),
+  resetBtn=$('resetBtn'),openAlbumBtn=$('openAlbumBtn'),albumPage=$('albumPage'),albumBack=$('albumBack'),
+  albumGrid=$('albumGrid'),albumCount=$('albumCount'),detailPage=$('detailPage'),detailBack=$('detailBack'),
+  detailTitle=$('detailTitle'),editorTags=$('editorTags'),detailStage=$('detailStage'),detailFrames=$('detailFrames'),
+  detailThumbs=$('detailThumbs'),prevFrameBtn=$('prevFrameBtn'),nextFrameBtn=$('nextFrameBtn'),
+  eraseBtn=$('eraseBtn'),optimizeBtn=$('optimizeBtn'),undoBtn=$('undoBtn'),compareBtn=$('compareBtn'),saveBtn=$('saveBtn'),
+  procMask=$('procMask'),procTitle=$('procTitle'),procSub=$('procSub'),procBar=$('procBar'),
+  netPrompt=$('netPrompt'),netPromptOk=$('netPromptOk'),netPromptGoOnline=$('netPromptGoOnline');
 
-// ============ DOM ============
-const shutter=$('shutter'), ringFg=$('ringFg'), viewfinder=$('viewfinder'), vfVideo=$('vfVideo'),
-  vfHint=$('vfHint'), vfProcessing=$('vfProcessing'), countdown=$('countdown'), recIndicator=$('recIndicator'),
-  focusFrame=$('focusFrame'), thumb=$('thumb'), thumbSlot=$('thumbSlot'), countBadge=$('countBadge'),
-  toast=$('toast'), netOptions=$('netOptions'), netCurrent=$('netCurrent'), netBadge=$('netBadge'),
-  failToggle=$('failToggle'), resetBtn=$('resetBtn'), openAlbumBtn=$('openAlbumBtn'),
-  albumPage=$('albumPage'), albumBack=$('albumBack'), albumGrid=$('albumGrid'), albumCount=$('albumCount'),
-  detailPage=$('detailPage'), detailBack=$('detailBack'), detailTitle=$('detailTitle'),
-  detailStage=$('detailStage'), detailFrames=$('detailFrames'), detailThumbs=$('detailThumbs'),
-  prevFrameBtn=$('prevFrameBtn'), nextFrameBtn=$('nextFrameBtn'), detailOptBadge=$('detailOptBadge'),
-  optimizeBtn=$('optimizeBtn'), optEntrySub=$('optEntrySub'),
-  optPage=$('optPage'), optBack=$('optBack'), optImg=$('optImg'), optTag=$('optTag'),
-  optCompareBtn=$('optCompareBtn'), optDiscardBtn=$('optDiscardBtn'), optSaveBtn=$('optSaveBtn'),
-  optProcessing=$('optProcessing'), optProcTitle=$('optProcTitle'), optProcSub=$('optProcSub'), optProcBar=$('optProcBar'),
-  netPrompt=$('netPrompt'), netPromptOk=$('netPromptOk'), netPromptGoOnline=$('netPromptGoOnline');
-
-// ============ 常量 / 视觉 ============
-const PRESS_DURATION_MS=5000, CIRC=2*Math.PI*50;
-const OPT_FILTER='contrast(1.16) saturate(1.30) brightness(1.06) drop-shadow(0 0 0)';
+const PRESS_DURATION_MS=5000,CIRC=2*Math.PI*50;
+const OPT_FILTER='contrast(1.16) saturate(1.30) brightness(1.06)';
 const HL_VARIANTS=['none','brightness(.95) saturate(.97) contrast(1.03)','brightness(1.05) contrast(1.04) hue-rotate(-4deg)'];
 const PHOTO_VARIANTS=['saturate(.9) brightness(1.02)','sepia(.12) saturate(1.05)','brightness(.97) contrast(1.05)','hue-rotate(6deg) saturate(1.05)'];
 
-let net='online', state='IDLE';
-let pressStartT=0, pressTimer=null, pressRaf=null;
-let activeItem=null, frameIdx=0;
+let net='online',state='IDLE',busy=false;
+let pressStartT=0,pressTimer=null,pressRaf=null;
+let activeItem=null,frameIdx=0,editorCtx='album',compareHold=false;
 let currentLongPressItem=null;
-let processing=false;
-function anyOverlayOpen(){return ['albumPage','detailPage','optPage','optProcessing','netPrompt'].some(function(id){return document.getElementById(id).classList.contains('show');});}
 
-// ============ 相册数据 ============
 let seq=1;
-function mk(kind, frames, optimized){ return { id:'i'+(seq++), kind, frames, optimized: !!optimized }; }
+function mk(kind,frames,ops){return {id:'i'+(seq++),kind,frames,ops:ops?ops.slice():[],eraseMode:null};}
 let album=[];
-function initAlbum(){
-  album=[
-    mk('photo',1,false),
-    mk('photo',1,false),
-    mk('highlight',3,false),
-    mk('photo',1,false),
-  ];
-}
+function initAlbum(){ album=[ mk('photo',1), mk('photo',1), mk('highlight',3), mk('photo',1) ]; }
 initAlbum();
 
-// ============ 状态轴 ============
-const STATE_ORDER=['IDLE','PRESSING','DEVICE_PROCESSING','DEVICE_READY','ALBUM_OPEN','PHOTO_OPEN','OPT_PROCESSING','OPT_RESULT'];
-function setState(s){
-  state=s;
-  const idx=STATE_ORDER.indexOf(s);
-  document.querySelectorAll('.step').forEach(el=>{
-    el.classList.remove('active','done');
-    const i=STATE_ORDER.indexOf(el.dataset.state);
-    if(idx<0) return;
-    if(i<idx) el.classList.add('done');
-    else if(i===idx) el.classList.add('active');
-  });
-}
-function showToast(msg,dur=2200){
-  toast.textContent=msg; toast.classList.add('show');
-  clearTimeout(toast._t); toast._t=setTimeout(()=>toast.classList.remove('show'),dur);
-}
-function itemFilter(it, frame){
-  if(it.optimized) return OPT_FILTER;
-  if(it.kind==='highlight') return HL_VARIANTS[(frame||0)%HL_VARIANTS.length];
-  const n=parseInt(it.id.slice(1))-1;
-  return PHOTO_VARIANTS[n%PHOTO_VARIANTS.length];
-}
+function hasOp(it,op){return it.ops.indexOf(op)>=0;}
+function baseVariant(it,i){ return it.kind==='highlight'?HL_VARIANTS[i%3]:PHOTO_VARIANTS[(parseInt(it.id.slice(1))-1)%4]; }
+function itemFilter(it,i){ return hasOp(it,'optimize')?OPT_FILTER:baseVariant(it,i); }
 
-/* ============= 长按 → 端侧高光 ============= */
+const ORDER=['IDLE','PRESSING','RECOG','AUTO_ERASE','EDIT','PROCESSING','DONE'];
+function setState(s){ state=s; const idx=ORDER.indexOf(s);
+  document.querySelectorAll('.step').forEach(el=>{ el.classList.remove('active','done'); const i=ORDER.indexOf(el.dataset.state);
+    if(idx<0)return; if(i<idx)el.classList.add('done'); else if(i===idx)el.classList.add('active'); }); }
+function showToast(msg,dur=2400){ toast.textContent=msg; toast.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>toast.classList.remove('show'),dur); }
+
+/* ============ 长按 → 识别 → 自动消除 ============ */
 function startPress(e){
-  if(processing) return;
-  if(state==='PRESSING'||state==='DEVICE_PROCESSING') return;
-  if(anyOverlayOpen()) return;
+  if(busy||state!=='IDLE') return;
   if(e.cancelable) e.preventDefault();
   pressStartT=performance.now();
-  shutter.classList.add('pressing');
-  viewfinder.classList.add('recording');
-  vfHint.style.opacity=0;
-  recIndicator.classList.add('show');
-  vfVideo.currentTime=0; vfVideo.play().catch(()=>{});
+  shutter.classList.add('pressing'); viewfinder.classList.add('recording'); vfHint.style.opacity=0;
+  recIndicator.classList.add('show'); vfVideo.currentTime=0; vfVideo.play().catch(()=>{});
   setState('PRESSING'); countdown.textContent='5';
-  function tick(){
-    const elapsed=performance.now()-pressStartT;
-    const pct=Math.min(elapsed/PRESS_DURATION_MS,1);
-    ringFg.style.strokeDashoffset=CIRC*(1-pct);
-    countdown.textContent=Math.max(0,Math.ceil((PRESS_DURATION_MS-elapsed)/1000));
-    if(pct<1 && state==='PRESSING') pressRaf=requestAnimationFrame(tick);
-    else if(pct>=1) endPress(true);
-  }
+  function tick(){ const el=performance.now()-pressStartT; const pct=Math.min(el/PRESS_DURATION_MS,1);
+    ringFg.style.strokeDashoffset=CIRC*(1-pct); countdown.textContent=Math.max(0,Math.ceil((PRESS_DURATION_MS-el)/1000));
+    if(pct<1&&state==='PRESSING') pressRaf=requestAnimationFrame(tick); else if(pct>=1) endPress(); }
   pressRaf=requestAnimationFrame(tick);
-  pressTimer=setTimeout(()=>endPress(true),PRESS_DURATION_MS+50);
+  pressTimer=setTimeout(endPress,PRESS_DURATION_MS+50);
 }
 function endPress(){
   if(state!=='PRESSING') return;
   clearTimeout(pressTimer); cancelAnimationFrame(pressRaf);
   shutter.classList.remove('pressing'); vfVideo.pause(); recIndicator.classList.remove('show');
-  const heldMs=performance.now()-pressStartT;
-  if(heldMs<800){
-    viewfinder.classList.remove('recording'); vfHint.style.opacity=1;
-    ringFg.style.strokeDashoffset=CIRC; setState('IDLE');
-    showToast('按住快门 ≥ 1 秒才会启动长按高光'); return;
-  }
-  setState('DEVICE_PROCESSING'); vfProcessing.classList.add('show');
+  const held=performance.now()-pressStartT;
+  if(held<800){ viewfinder.classList.remove('recording'); vfHint.style.opacity=1; ringFg.style.strokeDashoffset=CIRC; setState('IDLE'); showToast('E1 · 按住快门 ≥ 1 秒才会启动长按高光'); return; }
+  setState('RECOG'); vfProcLabel.textContent='端侧 AI 识别高光帧'; vfProcessing.classList.add('show');
   setTimeout(()=>{
-    vfProcessing.classList.remove('show');
-    viewfinder.classList.remove('recording');
-    ringFg.style.strokeDashoffset=CIRC;
+    vfProcessing.classList.remove('show'); viewfinder.classList.remove('recording'); ringFg.style.strokeDashoffset=CIRC;
+    if(simRecog.checked){
+      // E2/E3 识别失败/中断 → 不出高光，保留原视频
+      const v=mk('video',1); album.unshift(v);
+      setState('IDLE');
+      showToast('E3 · 高光识别中断，已保留原视频（可重试）',3000);
+      return;
+    }
     focusFrame.classList.remove('show'); void focusFrame.offsetWidth; focusFrame.classList.add('show');
-    const it=mk('highlight',3,false);
-    album.unshift(it); currentLongPressItem=it;
-    thumb.style.backgroundImage='url(assets/highlight.jpg)';
-    thumb.style.filter=HL_VARIANTS[0];
-    thumb.classList.add('show'); thumbSlot.classList.add('show');
-    countBadge.textContent='3';
-    setState('DEVICE_READY');
-    showToast('端侧已生成 3 张高光帧（无需联网）');
-  },220);
+    const it=mk('highlight',3); album.unshift(it); currentLongPressItem=it;
+    thumb.style.backgroundImage='url(assets/highlight.jpg)'; thumb.style.filter=HL_VARIANTS[0];
+    thumb.classList.add('show'); thumbSlot.classList.add('show'); countBadge.textContent='3';
+    // 自动消除
+    setState('AUTO_ERASE');
+    runErase(it,()=>{ openEditor(it,'highlight'); });
+  },650);
 }
 shutter.addEventListener('mousedown',startPress);
 shutter.addEventListener('touchstart',startPress,{passive:false});
 window.addEventListener('mouseup',()=>{ if(state==='PRESSING') endPress(); });
 window.addEventListener('touchend',()=>{ if(state==='PRESSING') endPress(); });
-thumb.addEventListener('click',()=>{
-  if(!thumb.classList.contains('show')) return;
-  openDetail(currentLongPressItem);
-});
+thumb.addEventListener('click',()=>{ if(!thumb.classList.contains('show')||busy) return; openEditor(currentLongPressItem,'highlight'); });
 
-/* ============= 网络切换 ============= */
-netOptions.addEventListener('click',(e)=>{
-  const opt=e.target.closest('.net-opt'); if(!opt) return;
-  setNet(opt.dataset.net);
-});
-function setNet(n){
-  net=n;
-  netOptions.querySelectorAll('.net-opt').forEach(el=>el.classList.toggle('active', el.dataset.net===n));
-  const labels={online:'已联网',offline:'无网络'};
-  netCurrent.textContent=labels[n]; netBadge.textContent=labels[n];
-  netBadge.classList.toggle('off', n!=='online');
+/* ============ 网络 ============ */
+netOptions.addEventListener('click',(e)=>{ const o=e.target.closest('.net-opt'); if(!o)return; setNet(o.dataset.net); });
+function setNet(n){ net=n; netOptions.querySelectorAll('.net-opt').forEach(el=>el.classList.toggle('active',el.dataset.net===n));
+  const L={online:'已联网',offline:'无网络'}; netCurrent.textContent=L[n]; netBadge.textContent=L[n]; netBadge.classList.toggle('off',n!=='online'); }
+
+/* ============ 通用前台处理遮罩 ============ */
+// runJob(title,sub,total,decide) → decide() 在完成时调用，返回结果；retry 由 decide 内部用闭包控制
+function runProc(opts){
+  // opts: {title, sub, total, retryAt, onRetryTitle, willRetry, onDone}
+  busy=true; setState('PROCESSING');
+  procTitle.textContent=opts.title; procSub.textContent=opts.sub||'请保持在本页'; procBar.style.width='0%';
+  procMask.classList.add('show');
+  let t0=performance.now(), retried=false;
+  (function step(){
+    const el=performance.now()-t0; let pct=Math.min(el/opts.total,1);
+    procBar.style.width=(pct*100).toFixed(0)+'%';
+    if(opts.willRetry && !retried && pct>=0.5){ retried=true; procTitle.textContent=opts.onRetryTitle; t0=performance.now(); procBar.style.width='0%'; requestAnimationFrame(step); return; }
+    if(pct<1){ requestAnimationFrame(step); return; }
+    procMask.classList.remove('show'); busy=false; opts.onDone();
+  })();
+}
+procMask.addEventListener('click',()=>{ showToast('E7 · 处理进行中，请保持在本页（不可后台处理）'); });
+
+function refreshAfterOp(){ if(activeItem && detailPage.classList.contains('show')){ applyVisual(); refreshEditorButtons(); updateEditorHeader(); } }
+/* ============ 消除（网络感知 + 异常） ============ */
+function runErase(it, done){
+  const online = net==='online';
+  if(online){
+    const willRetry = simEraseFail.checked; // E4: 云端先失败再重试
+    runProc({ title:'云端消除中…', sub:'上传并消除画面中的路人', total:1700,
+      willRetry, onRetryTitle:'云端消除失败，重试中（1/1）…',
+      onDone:()=>{
+        if(simNoTarget.checked){ showToast('E5 · 未检测到可消除的路人，已保留原图'); refreshAfterOp(); if(done)done(); return; }
+        if(simEraseFail.checked){ // 重试仍失败 → 降级端侧
+          it.ops.push('erase'); it.eraseMode='local-fallback'; showToast('E4 · 云端消除失败，已用端侧消除'); refreshAfterOp(); if(done)done(); return;
+        }
+        it.ops.push('erase'); it.eraseMode='cloud'; showToast('云端消除完成'); refreshAfterOp(); if(done)done();
+      }});
+  } else {
+    runProc({ title:'端侧消除中…', sub:'无网络，使用端侧消除（降级）', total:1200, willRetry:false,
+      onDone:()=>{
+        if(simNoTarget.checked){ showToast('E5 · 未检测到可消除的路人，已保留原图'); refreshAfterOp(); if(done)done(); return; }
+        it.ops.push('erase'); it.eraseMode='local'; showToast('无网络，已用端侧消除'); refreshAfterOp(); if(done)done();
+      }});
+  }
 }
 
-/* ============= 相册 ============= */
-openAlbumBtn.addEventListener('click',openAlbum);
-function openAlbum(){ renderAlbum(); albumPage.classList.add('show'); setState('ALBUM_OPEN'); }
+/* ============ 照片优化（仅相册 · 网络感知 + 异常） ============ */
+function runOptimize(it, done){
+  if(net!=='online'){ netPrompt.classList.add('show'); return; }  // E8
+  const willFail=simOptFail.checked;
+  runProc({ title:'云侧照片优化中…', sub:'上传并生成大师风格照片，请保持在本页', total:2600,
+    willRetry:willFail, onRetryTitle:'优化出错，重试中（1/1）…',
+    onDone:()=>{
+      if(willFail){ showToast('E9 · 照片优化暂不可用，已保留原图',2800); if(done)done(); return; } // E9 重试仍失败
+      it.ops.push('optimize'); showToast('照片优化完成'); refreshAfterOp(); if(done)done();
+    }});
+}
+
+/* ============ 相册 ============ */
+openAlbumBtn.addEventListener('click',()=>{ if(busy)return; renderAlbum(); albumPage.classList.add('show'); setState('IDLE'); });
 albumBack.addEventListener('click',()=>{ albumPage.classList.remove('show'); setState('IDLE'); });
 function renderAlbum(){
-  albumCount.textContent=album.length;
-  albumGrid.innerHTML='';
+  albumCount.textContent=album.length; albumGrid.innerHTML='';
   album.forEach(it=>{
-    const c=document.createElement('div');
-    c.className='album-cell';
-    c.style.backgroundImage='url(assets/highlight.jpg)';
-    c.style.filter=itemFilter(it,0);
-    if(it.kind==='highlight'){
-      const v=document.createElement('div'); v.className='cell-video'; v.textContent='▶'; c.appendChild(v);
-      const cnt=document.createElement('div'); cnt.className='cell-count'; cnt.textContent='3'; c.appendChild(cnt);
-    }
-    if(it.optimized){ const b=document.createElement('div'); b.className='cell-opt'; b.textContent='✨'; c.appendChild(b); }
-    c.addEventListener('click',()=>openDetail(it));
+    const c=document.createElement('div'); c.className='album-cell'; c.style.backgroundImage='url(assets/highlight.jpg)'; c.style.filter=itemFilter(it,0);
+    if(it.kind!=='photo'){ const v=document.createElement('div'); v.className='cell-video'; v.textContent='▶'; c.appendChild(v);
+      const cnt=document.createElement('div'); cnt.className='cell-count'; cnt.textContent=it.kind==='highlight'?'3':'视频'; c.appendChild(cnt); }
+    if(hasOp(it,'optimize')){ const b=document.createElement('div'); b.className='cell-opt'; b.textContent='✨'; c.appendChild(b); }
+    if(hasOp(it,'erase')){ const b=document.createElement('div'); b.className='cell-erase'; b.textContent='🩹'; c.appendChild(b); }
+    c.addEventListener('click',()=>{ if(busy)return; openEditor(it,'album'); });
     albumGrid.appendChild(c);
   });
 }
 
-/* ============= 照片/高光详情 ============= */
-function openDetail(it){
-  if(!it) return;
-  activeItem=it; frameIdx=0;
-  buildFrames(); buildThumbs(); updateDetailHeader();
-  detailPage.classList.add('show');
-  setState('PHOTO_OPEN');
+/* ============ 统一编辑页 ============ */
+function openEditor(it,ctx){
+  if(!it) return; activeItem=it; editorCtx=ctx; frameIdx=0; compareHold=false;
+  optimizeBtn.style.display = ctx==='album' ? '' : 'none';
+  buildFrames(); buildThumbs(); applyVisual(); refreshEditorButtons(); updateEditorHeader();
+  detailPage.classList.add('show'); setState('EDIT');
 }
 function buildFrames(){
-  const stageW=detailStage.clientWidth;
-  const n=activeItem.frames;
-  detailFrames.style.width=(stageW*n)+'px';
-  detailFrames.style.transform='translateX(0)';
-  detailFrames.innerHTML='';
+  const w=detailStage.clientWidth, n=activeItem.frames;
+  detailFrames.style.width=(w*n)+'px'; detailFrames.style.transform='translateX(0)'; detailFrames.innerHTML='';
   for(let i=0;i<n;i++){
-    const f=document.createElement('div');
-    f.className='detail-frame'; f.style.width=stageW+'px';
-    f.style.backgroundImage='url(assets/highlight.jpg)';
-    f.style.filter=itemFilter(activeItem,i);
-    let tag;
-    if(activeItem.optimized) tag='<div class="frame-tag">✨ 已优化 · 大师风格</div>';
-    else if(activeItem.kind==='highlight') tag='<div class="frame-tag">端侧高光帧</div>';
-    else tag='<div class="frame-tag">原图</div>';
+    const f=document.createElement('div'); f.className='detail-frame'; f.style.width=w+'px'; f.style.backgroundImage='url(assets/highlight.jpg)';
     const num = n>1 ? `<div class="frame-num">${i+1}/${n}</div>` : '';
-    f.innerHTML=tag+num;
+    const tag = activeItem.kind==='highlight' ? '<div class="frame-tag">端侧高光帧</div>' : '<div class="frame-tag">照片</div>';
+    f.innerHTML=tag+num+'<div class="bystander">🧍<div class="lbl">路人</div></div>';
     detailFrames.appendChild(f);
   }
-  const multi=n>1;
-  prevFrameBtn.style.display=multi?'':'none';
-  nextFrameBtn.style.display=multi?'':'none';
-  detailThumbs.style.display=multi?'':'none';
-  detailOptBadge.style.display=activeItem.optimized?'':'none';
+  const multi=n>1; prevFrameBtn.style.display=multi?'':'none'; nextFrameBtn.style.display=multi?'':'none'; detailThumbs.style.display=multi?'':'none';
 }
-function buildThumbs(){
-  detailThumbs.innerHTML='';
-  if(activeItem.frames<=1) return;
-  for(let i=0;i<activeItem.frames;i++){
-    const d=document.createElement('div');
-    d.className='detail-thumb'+(i===frameIdx?' active':'');
-    d.style.backgroundImage='url(assets/highlight.jpg)';
-    d.style.filter=itemFilter(activeItem,i);
-    d.addEventListener('click',()=>{ frameIdx=i; layoutFrames(); });
-    detailThumbs.appendChild(d);
-  }
+function buildThumbs(){ detailThumbs.innerHTML=''; if(activeItem.frames<=1)return;
+  for(let i=0;i<activeItem.frames;i++){ const d=document.createElement('div'); d.className='detail-thumb'+(i===frameIdx?' active':'');
+    d.style.backgroundImage='url(assets/highlight.jpg)'; d.style.filter=itemFilter(activeItem,i);
+    d.addEventListener('click',()=>{ frameIdx=i; layoutFrames(); }); detailThumbs.appendChild(d); } }
+function applyVisual(){
+  const showErased = !compareHold && hasOp(activeItem,'erase');
+  const useOpt = !compareHold && hasOp(activeItem,'optimize');
+  detailFrames.querySelectorAll('.detail-frame').forEach((f,i)=>{
+    f.style.filter = useOpt?OPT_FILTER:baseVariant(activeItem,i);
+    f.classList.toggle('erased', showErased);
+  });
 }
-function layoutFrames(){
-  const stageW=detailStage.clientWidth;
-  detailFrames.style.transform=`translateX(${-frameIdx*stageW}px)`;
-  detailThumbs.querySelectorAll('.detail-thumb').forEach((x,j)=>x.classList.toggle('active',j===frameIdx));
-  updateDetailHeader();
+function layoutFrames(){ const w=detailStage.clientWidth; detailFrames.style.transform=`translateX(${-frameIdx*w}px)`;
+  detailThumbs.querySelectorAll('.detail-thumb').forEach((x,j)=>x.classList.toggle('active',j===frameIdx)); }
+function updateEditorHeader(){
+  const n=activeItem.frames; let base = activeItem.kind==='highlight'?'端侧高光': (activeItem.kind==='video'?'视频':'照片');
+  detailTitle.textContent = n>1 ? `${base}（${frameIdx+1}/${n}）` : base;
+  editorTags.innerHTML='';
+  if(hasOp(activeItem,'erase')){ const t=document.createElement('span'); t.className='tg erase'; t.textContent='已消除'+(activeItem.eraseMode==='cloud'?'·云端':activeItem.eraseMode==='local-fallback'?'·端侧(降级)':'·端侧'); editorTags.appendChild(t); }
+  if(hasOp(activeItem,'optimize')){ const t=document.createElement('span'); t.className='tg opt'; t.textContent='已优化·大师风格'; editorTags.appendChild(t); }
 }
-function updateDetailHeader(){
-  const n=activeItem.frames;
-  let base = activeItem.kind==='highlight' ? '端侧高光' : '照片';
-  if(activeItem.optimized) base = activeItem.kind==='highlight' ? '高光 · 已优化' : '照片 · 已优化';
-  detailTitle.textContent = n>1 ? `${base} (${frameIdx+1}/${n})` : base;
-  optimizeBtn.textContent = activeItem.optimized ? '✨ 重新优化' : '✨ 照片优化';
-  optEntrySub.textContent = activeItem.optimized ? '已保存优化版本 · 可重新优化' : '云侧生成式大师风格优化 · 不改变人物形象';
+function refreshEditorButtons(){
+  eraseBtn.classList.toggle('disabled', busy||hasOp(activeItem,'erase'));
+  optimizeBtn.classList.toggle('disabled', busy||hasOp(activeItem,'optimize'));
+  undoBtn.classList.toggle('disabled', busy||activeItem.ops.length===0);
+  saveBtn.classList.toggle('disabled', busy);
 }
 prevFrameBtn.addEventListener('click',()=>{ if(frameIdx>0){frameIdx--;layoutFrames();} });
 nextFrameBtn.addEventListener('click',()=>{ if(frameIdx<activeItem.frames-1){frameIdx++;layoutFrames();} });
-let tStartX=0;
-detailStage.addEventListener('touchstart',e=>tStartX=e.touches[0].clientX,{passive:true});
-detailStage.addEventListener('touchend',e=>{
-  const dx=e.changedTouches[0].clientX-tStartX;
-  if(Math.abs(dx)>40 && activeItem.frames>1){
-    if(dx<0 && frameIdx<activeItem.frames-1) frameIdx++;
-    else if(dx>0 && frameIdx>0) frameIdx--;
-    layoutFrames();
-  }
-});
-detailBack.addEventListener('click',()=>{ detailPage.classList.remove('show'); setState(albumPage.classList.contains('show')?'ALBUM_OPEN':'IDLE'); });
+let tX=0; detailStage.addEventListener('touchstart',e=>tX=e.touches[0].clientX,{passive:true});
+detailStage.addEventListener('touchend',e=>{ const dx=e.changedTouches[0].clientX-tX; if(Math.abs(dx)>40&&activeItem.frames>1){ if(dx<0&&frameIdx<activeItem.frames-1)frameIdx++; else if(dx>0&&frameIdx>0)frameIdx--; layoutFrames(); } });
+detailBack.addEventListener('click',()=>{ if(busy)return; detailPage.classList.remove('show'); setState(albumPage.classList.contains('show')?'IDLE':'IDLE'); });
 
-/* ============= 照片优化：入口 → 网络判断 ============= */
-optimizeBtn.addEventListener('click',()=>{
-  if(!activeItem) return;
-  if(net!=='online'){ netPrompt.classList.add('show'); return; }   // 无网络 → 提示连网，停留
-  startOptimize();
-});
+eraseBtn.addEventListener('click',()=>{ if(busy||hasOp(activeItem,'erase'))return; runErase(activeItem,()=>{ updateEditorHeader(); }); });
+optimizeBtn.addEventListener('click',()=>{ if(editorCtx!=='album'||busy||hasOp(activeItem,'optimize'))return; runOptimize(activeItem,()=>{ updateEditorHeader(); }); });
+undoBtn.addEventListener('click',()=>{ if(busy||activeItem.ops.length===0)return; const op=activeItem.ops.pop(); if(op==='erase')activeItem.eraseMode=null; refreshAfterOp(); updateEditorHeader(); showToast('已撤销'+(op==='erase'?'消除':'照片优化')); });
+saveBtn.addEventListener('click',()=>{ if(busy)return; setState('DONE'); showToast('已保存'); if(albumPage.classList.contains('show'))renderAlbum(); });
+// 按住对比原图
+function cmpOn(){ if(busy)return; compareHold=true; applyVisual(); }
+function cmpOff(){ if(!compareHold)return; compareHold=false; applyVisual(); }
+compareBtn.addEventListener('mousedown',cmpOn); compareBtn.addEventListener('touchstart',e=>{e.preventDefault();cmpOn();},{passive:false});
+window.addEventListener('mouseup',cmpOff); window.addEventListener('touchend',cmpOff);
+
+/* ============ 无网提示 ============ */
 netPromptOk.addEventListener('click',()=>netPrompt.classList.remove('show'));
 netPromptGoOnline.addEventListener('click',()=>{ setNet('online'); netPrompt.classList.remove('show'); showToast('已连接网络，可重新点击「照片优化」'); });
 
-/* ============= 处理中（前台阻塞，无队列） ============= */
-function startOptimize(){
-  processing=true;
-  setState('OPT_PROCESSING');
-  optProcTitle.textContent='云侧照片优化中…';
-  optProcSub.textContent='正在上传并生成大师风格照片，请保持在本页';
-  optProcBar.style.width='0%';
-  optProcessing.classList.add('show');
-
-  const willFail=failToggle.checked;
-  const total=4200;
-  let t0=performance.now();
-  let retried=false;
-  (function step(){
-    const el=performance.now()-t0;
-    let pct=Math.min(el/total,1);
-    optProcBar.style.width=(pct*100).toFixed(0)+'%';
-    // 失败场景：到 ~55% 触发错误 → 自动重试 1 次
-    if(willFail && !retried && pct>=0.55){
-      retried=true;
-      optProcTitle.textContent='处理出错，正在自动重试（1/1）…';
-      t0=performance.now();
-      optProcBar.style.width='0%';
-      requestAnimationFrame(step); return;
-    }
-    if(pct<1){ requestAnimationFrame(step); return; }
-    // 到达终点
-    if(willFail){ finishFail(); } else { finishSuccess(); }
-  })();
-}
-function finishSuccess(){
-  processing=false;
-  optProcessing.classList.remove('show');
-  openResult();
-}
-function finishFail(){
-  processing=false;
-  optProcessing.classList.remove('show');
-  setState('PHOTO_OPEN');
-  showToast('云端处理暂时不可用，已自动保留原图',2600);
-}
-// 处理中点击遮罩 → 阻止退出
-optProcessing.addEventListener('click',()=>{
-  showToast('云侧优化进行中，请保持在本页（不可后台处理）');
-});
-
-/* ============= 结果页 ============= */
-function openResult(){
-  optImg.style.filter=OPT_FILTER;
-  optTag.textContent='✨ 大师风格优化版'; optTag.classList.remove('cmp');
-  optPage.classList.add('show');
-  setState('OPT_RESULT');
-}
-optBack.addEventListener('click',()=>{ optPage.classList.remove('show'); setState('PHOTO_OPEN'); showToast('已退出，未保存（保留原图）'); });
-optSaveBtn.addEventListener('click',()=>{
-  activeItem.optimized=true;
-  optPage.classList.remove('show');
-  buildFrames(); buildThumbs(); updateDetailHeader();
-  setState('PHOTO_OPEN');
-  showToast('已保存优化版本');
-});
-optDiscardBtn.addEventListener('click',()=>{
-  optPage.classList.remove('show'); setState('PHOTO_OPEN');
-  showToast('已放弃，保留原图');
-});
-// 对比原图：按住显示原图，松开回到优化版
-function showOriginal(){ optImg.style.filter=itemFilter(activeItem,frameIdx); optTag.textContent='原图'; optTag.classList.add('cmp'); }
-function showOptimized(){ optImg.style.filter=OPT_FILTER; optTag.textContent='✨ 大师风格优化版'; optTag.classList.remove('cmp'); }
-optCompareBtn.addEventListener('mousedown',showOriginal);
-optCompareBtn.addEventListener('touchstart',e=>{e.preventDefault();showOriginal();},{passive:false});
-window.addEventListener('mouseup',()=>{ if(optPage.classList.contains('show')) showOptimized(); });
-window.addEventListener('touchend',()=>{ if(optPage.classList.contains('show')) showOptimized(); });
-
-/* ============= 重置 ============= */
+/* ============ 重置 ============ */
 resetBtn.addEventListener('click',()=>{
-  processing=false;
-  ['show'].forEach(()=>{});
-  optProcessing.classList.remove('show');
-  netPrompt.classList.remove('show');
-  optPage.classList.remove('show');
-  detailPage.classList.remove('show');
-  albumPage.classList.remove('show');
-  thumb.classList.remove('show'); thumbSlot.classList.remove('show');
-  ringFg.style.strokeDashoffset=CIRC;
-  seq=1; initAlbum(); currentLongPressItem=null; activeItem=null;
-  setState('IDLE');
-  showToast('已重置');
+  busy=false; procMask.classList.remove('show'); netPrompt.classList.remove('show'); detailPage.classList.remove('show'); albumPage.classList.remove('show');
+  thumb.classList.remove('show'); thumbSlot.classList.remove('show'); ringFg.style.strokeDashoffset=CIRC;
+  seq=1; initAlbum(); currentLongPressItem=null; activeItem=null; setState('IDLE'); showToast('已重置');
 });
 
-// init
-setState('IDLE');
-ringFg.style.strokeDasharray=CIRC;
-ringFg.style.strokeDashoffset=CIRC;
+setState('IDLE'); ringFg.style.strokeDasharray=CIRC; ringFg.style.strokeDashoffset=CIRC;
 </script>
 </body>
 </html>
