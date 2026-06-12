@@ -1381,7 +1381,7 @@ function endPress(){
     thumb.classList.add('show'); thumbSlot.classList.add('show'); countBadge.textContent='3';
     // 自动消除
     setState('AUTO_ERASE');
-    runErase(it,()=>{ openEditor(it,'highlight'); });
+    runErase(it,()=>{ openEditor(it,'highlight'); }, true);
   },650);
 }
 shutter.addEventListener('mousedown',startPress);
@@ -1415,8 +1415,8 @@ procMask.addEventListener('click',()=>{ showToast('E7 · 处理进行中，请�
 
 function refreshAfterOp(){ if(activeItem && detailPage.classList.contains('show')){ applyVisual(); refreshEditorButtons(); updateEditorHeader(); } }
 /* ============ 消除（网络感知 + 异常） ============ */
-function runErase(it, done){
-  const online = net==='online';
+function runErase(it, done, forceLocal){
+  const online = !forceLocal && net==='online';
   if(online){
     const willRetry = simEraseFail.checked; // E4: 云端先失败再重试
     runProc({ title:'云端消除中…', sub:'上传并消除画面中的路人', total:1700,
@@ -1429,10 +1429,10 @@ function runErase(it, done){
         it.ops.push('erase'); it.eraseMode='cloud'; showToast('云端消除完成'); refreshAfterOp(); if(done)done();
       }});
   } else {
-    runProc({ title:'端侧消除中…', sub:'无网络，使用端侧消除（降级）', total:1200, willRetry:false,
+    runProc({ title:'端侧消除中…', sub: forceLocal?'长按高光仅用端侧消除（不上云）':'无网络，使用端侧消除（降级）', total:1200, willRetry:false,
       onDone:()=>{
         if(simNoTarget.checked){ showToast('E5 · 未检测到可消除的路人，已保留原图'); refreshAfterOp(); if(done)done(); return; }
-        it.ops.push('erase'); it.eraseMode='local'; showToast('无网络，已用端侧消除'); refreshAfterOp(); if(done)done();
+        it.ops.push('erase'); it.eraseMode='local'; showToast(forceLocal?'端侧消除完成':'无网络，已用端侧消除'); refreshAfterOp(); if(done)done();
       }});
   }
 }
