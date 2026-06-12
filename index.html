@@ -1114,7 +1114,7 @@ html, body {
 .editor-tags .tg.erase{background:rgba(91,140,255,.22);color:#bcd0ff;}
 .editor-tags .tg.opt{background:rgba(124,91,255,.25);color:#d9ccff;}
 .editor-actions{padding:10px;display:flex;flex-wrap:wrap;gap:7px;background:#0f1320;border-top:1px solid rgba(255,255,255,.07);}
-.ebtn{flex:1 1 30%;min-width:62px;padding:10px 0;border-radius:10px;font-size:12.5px;font-weight:600;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#e8ecf6;cursor:pointer;text-align:center;user-select:none;transition:opacity .2s;}
+.ebtn{flex:1 1 calc(50% - 4px);min-width:0;padding:11px 4px;border-radius:10px;font-size:12.5px;font-weight:600;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#e8ecf6;cursor:pointer;text-align:center;user-select:none;transition:opacity .2s;}
 .ebtn.primary{background:linear-gradient(135deg,#7c5bff,#5b8cff);border:none;color:#fff;}
 .ebtn.disabled{opacity:.38;pointer-events:none;}
 /* 前台处理遮罩 */
@@ -1438,6 +1438,9 @@ function renderAlbum(){
 function openEditor(it,ctx){
   if(!it) return; activeItem=it; editorCtx=ctx; frameIdx=0; compareHold=false;
   optimizeBtn.style.display = ctx==='album' ? '' : 'none';
+  saveBtn.style.display = ctx==='album' ? 'none' : '';
+  eraseBtn.textContent = ctx==='highlight' ? '🩹 手动消除' : '🩹 消除';
+  undoBtn.textContent  = ctx==='highlight' ? '↶ 撤销消除' : '↶ 撤销';
   buildFrames(); buildThumbs(); applyVisual(); refreshEditorButtons(); updateEditorHeader();
   detailPage.classList.add('show'); setState('EDIT');
 }
