@@ -1117,6 +1117,22 @@ html, body {
 .ebtn{flex:1 1 calc(50% - 4px);min-width:0;padding:11px 4px;border-radius:10px;font-size:12.5px;font-weight:600;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#e8ecf6;cursor:pointer;text-align:center;user-select:none;transition:opacity .2s;}
 .ebtn.primary{background:linear-gradient(135deg,#7c5bff,#5b8cff);border:none;color:#fff;}
 .ebtn.disabled{opacity:.38;pointer-events:none;}
+.editor-actions.three .ebtn{flex:1 1 0;min-width:0;}
+.manual-erase{position:absolute;inset:0;background:#0b0d12;display:none;flex-direction:column;z-index:45;}
+.manual-erase.show{display:flex;}
+.me-head{padding:12px 14px;font-size:13px;font-weight:600;color:#fff;background:#11141b;border-bottom:1px solid rgba(255,255,255,.06);}
+.me-head small{display:block;font-size:10.5px;color:rgba(255,255,255,.55);font-weight:400;margin-top:3px;}
+.me-stage{flex:1;position:relative;overflow:hidden;background:#000;}
+.me-img{position:absolute;inset:0;background:url(assets/highlight.jpg) center/cover;}
+.me-box{position:absolute;border:2px dashed rgba(255,255,255,.85);border-radius:8px;cursor:pointer;}
+.me-box .me-chk{position:absolute;top:4px;right:4px;opacity:0;width:20px;height:20px;border-radius:50%;background:#ff5a5a;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;}
+.me-box .me-tag{position:absolute;left:0;bottom:-17px;font-size:10px;color:rgba(255,255,255,.7);}
+.me-box.sel{border-color:#ff5a5a;border-style:solid;background:rgba(255,90,90,.2);}
+.me-box.sel .me-chk{opacity:1;}
+.me-actions{padding:12px;display:flex;gap:10px;background:#11141b;}
+.me-btn{flex:1;padding:12px 0;border-radius:11px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;}
+.me-btn.cancel{background:rgba(255,255,255,.08);color:#e8ecf6;border:1px solid rgba(255,255,255,.16);}
+.me-btn.confirm{background:linear-gradient(135deg,#ff7a7a,#ff5a5a);color:#fff;}
 /* 前台处理遮罩 */
 .proc-mask{position:absolute;inset:0;background:rgba(6,8,14,.92);backdrop-filter:blur(3px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:55;}
 .proc-mask.show{display:flex;}
@@ -1219,7 +1235,7 @@ html, body {
 
         <!-- 统一编辑页（高光 / 照片） -->
         <div class="screen-page detail-page" id="detailPage">
-          <div class="page-header"><div class="page-back" id="detailBack">‹</div><div class="page-title" id="detailTitle">编辑</div></div>
+          <div class="page-header"><div class="page-back" id="detailBack">‹</div><div class="page-title" id="detailTitle">编辑</div><div class="page-action" id="detailDone" style="display:none;">完成</div></div>
           <div class="editor-tags" id="editorTags"></div>
           <div class="detail-stage" id="detailStage">
             <div class="detail-frames" id="detailFrames"></div>
@@ -1233,6 +1249,20 @@ html, body {
             <div class="ebtn" id="undoBtn">↶ 撤销</div>
             <div class="ebtn" id="compareBtn">👁 按住对比原图</div>
             <div class="ebtn primary" id="saveBtn">保存</div>
+          </div>
+        </div>
+
+        <!-- 手动消除 · 框选 -->
+        <div class="manual-erase" id="manualErase">
+          <div class="me-head">手动消除<small>点选要消除的对象（框），确认后消除所选</small></div>
+          <div class="me-stage">
+            <div class="me-img"></div>
+            <div class="me-box" data-i="0" style="left:60%;top:26%;width:25%;height:62%;"><span class="me-chk">✓</span><span class="me-tag">路人 A</span></div>
+            <div class="me-box" data-i="1" style="left:11%;top:44%;width:15%;height:42%;"><span class="me-chk">✓</span><span class="me-tag">路人 B</span></div>
+          </div>
+          <div class="me-actions">
+            <div class="me-btn cancel" id="meCancel">取消</div>
+            <div class="me-btn confirm" id="meConfirm">确认消除 <span id="meCount">(0)</span></div>
           </div>
         </div>
 
@@ -1286,7 +1316,8 @@ const shutter=$('shutter'),ringFg=$('ringFg'),viewfinder=$('viewfinder'),vfVideo
   detailThumbs=$('detailThumbs'),prevFrameBtn=$('prevFrameBtn'),nextFrameBtn=$('nextFrameBtn'),
   eraseBtn=$('eraseBtn'),optimizeBtn=$('optimizeBtn'),undoBtn=$('undoBtn'),compareBtn=$('compareBtn'),saveBtn=$('saveBtn'),
   procMask=$('procMask'),procTitle=$('procTitle'),procSub=$('procSub'),procBar=$('procBar'),
-  netPrompt=$('netPrompt'),netPromptOk=$('netPromptOk'),netPromptGoOnline=$('netPromptGoOnline');
+  netPrompt=$('netPrompt'),netPromptOk=$('netPromptOk'),netPromptGoOnline=$('netPromptGoOnline'),
+  detailDone=$('detailDone'),manualErase=$('manualErase'),meCancel=$('meCancel'),meConfirm=$('meConfirm'),meCount=$('meCount');
 
 const PRESS_DURATION_MS=5000,CIRC=2*Math.PI*50;
 const OPT_FILTER='contrast(1.16) saturate(1.30) brightness(1.06)';
@@ -1438,7 +1469,10 @@ function renderAlbum(){
 function openEditor(it,ctx){
   if(!it) return; activeItem=it; editorCtx=ctx; frameIdx=0; compareHold=false;
   optimizeBtn.style.display = ctx==='album' ? '' : 'none';
-  saveBtn.style.display = ctx==='album' ? 'none' : '';
+  saveBtn.style.display = 'none';
+  compareBtn.style.display = '';
+  detailDone.style.display = ctx==='highlight' ? '' : 'none';
+  eraseBtn.parentElement.classList.toggle('three', ctx==='highlight');
   eraseBtn.textContent = ctx==='highlight' ? '🩹 手动消除' : '🩹 消除';
   undoBtn.textContent  = ctx==='highlight' ? '↶ 撤销消除' : '↶ 撤销';
   buildFrames(); buildThumbs(); applyVisual(); refreshEditorButtons(); updateEditorHeader();
@@ -1474,11 +1508,12 @@ function updateEditorHeader(){
   const n=activeItem.frames; let base = activeItem.kind==='highlight'?'端侧高光': (activeItem.kind==='video'?'视频':'照片');
   detailTitle.textContent = n>1 ? `${base}（${frameIdx+1}/${n}）` : base;
   editorTags.innerHTML='';
-  if(hasOp(activeItem,'erase')){ const t=document.createElement('span'); t.className='tg erase'; t.textContent='已消除'+(activeItem.eraseMode==='cloud'?'·云端':activeItem.eraseMode==='local-fallback'?'·端侧(降级)':'·端侧'); editorTags.appendChild(t); }
+  if(hasOp(activeItem,'erase')){ const t=document.createElement('span'); t.className='tg erase'; t.textContent='已消除'+(activeItem.eraseMode==='cloud'?'·云端':activeItem.eraseMode==='local-fallback'?'·端侧(降级)':activeItem.eraseMode==='manual'?'·手动':'·端侧'); editorTags.appendChild(t); }
   if(hasOp(activeItem,'optimize')){ const t=document.createElement('span'); t.className='tg opt'; t.textContent='已优化·大师风格'; editorTags.appendChild(t); }
 }
 function refreshEditorButtons(){
-  eraseBtn.classList.toggle('disabled', busy||hasOp(activeItem,'erase'));
+  eraseBtn.classList.toggle('disabled', busy);
+  eraseBtn.textContent = (editorCtx==='highlight'||hasOp(activeItem,'erase')) ? '🩹 手动消除' : '🩹 消除';
   optimizeBtn.classList.toggle('disabled', busy||hasOp(activeItem,'optimize'));
   undoBtn.classList.toggle('disabled', busy||activeItem.ops.length===0);
   saveBtn.classList.toggle('disabled', busy);
@@ -1489,7 +1524,7 @@ let tX=0; detailStage.addEventListener('touchstart',e=>tX=e.touches[0].clientX,{
 detailStage.addEventListener('touchend',e=>{ const dx=e.changedTouches[0].clientX-tX; if(Math.abs(dx)>40&&activeItem.frames>1){ if(dx<0&&frameIdx<activeItem.frames-1)frameIdx++; else if(dx>0&&frameIdx>0)frameIdx--; layoutFrames(); } });
 detailBack.addEventListener('click',()=>{ if(busy)return; detailPage.classList.remove('show'); setState(albumPage.classList.contains('show')?'IDLE':'IDLE'); });
 
-eraseBtn.addEventListener('click',()=>{ if(busy||hasOp(activeItem,'erase'))return; runErase(activeItem,()=>{ updateEditorHeader(); }); });
+eraseBtn.addEventListener('click',()=>{ if(busy)return; if(editorCtx==='highlight'){ openManual(); return; } if(hasOp(activeItem,'erase')){ openManual(); return; } runErase(activeItem,()=>{ updateEditorHeader(); }); });
 optimizeBtn.addEventListener('click',()=>{ if(editorCtx!=='album'||busy||hasOp(activeItem,'optimize'))return; runOptimize(activeItem,()=>{ updateEditorHeader(); }); });
 undoBtn.addEventListener('click',()=>{ if(busy||activeItem.ops.length===0)return; const op=activeItem.ops.pop(); if(op==='erase')activeItem.eraseMode=null; refreshAfterOp(); updateEditorHeader(); showToast('已撤销'+(op==='erase'?'消除':'照片优化')); });
 saveBtn.addEventListener('click',()=>{ if(busy)return; setState('DONE'); showToast('已保存'); if(albumPage.classList.contains('show'))renderAlbum(); });
@@ -1499,13 +1534,20 @@ function cmpOff(){ if(!compareHold)return; compareHold=false; applyVisual(); }
 compareBtn.addEventListener('mousedown',cmpOn); compareBtn.addEventListener('touchstart',e=>{e.preventDefault();cmpOn();},{passive:false});
 window.addEventListener('mouseup',cmpOff); window.addEventListener('touchend',cmpOff);
 
+/* ============ 手动消除 · 框选 ============ */
+function openManual(){ manualErase.querySelectorAll('.me-box').forEach(b=>b.classList.remove('sel')); meCount.textContent='(0)'; manualErase.classList.add('show'); }
+manualErase.querySelectorAll('.me-box').forEach(box=>box.addEventListener('click',()=>{ box.classList.toggle('sel'); meCount.textContent='('+manualErase.querySelectorAll('.me-box.sel').length+')'; }));
+meCancel.addEventListener('click',()=>manualErase.classList.remove('show'));
+meConfirm.addEventListener('click',()=>{ const n=manualErase.querySelectorAll('.me-box.sel').length; manualErase.classList.remove('show'); if(n===0){ showToast('未选择对象，未消除'); return; } if(!hasOp(activeItem,'erase')) activeItem.ops.push('erase'); activeItem.eraseMode='manual'; applyVisual(); refreshEditorButtons(); updateEditorHeader(); showToast('已手动消除 '+n+' 个对象'); });
+detailDone.addEventListener('click',()=>{ if(busy)return; detailPage.classList.remove('show'); setState('IDLE'); showToast('已完成'); });
+
 /* ============ 无网提示 ============ */
 netPromptOk.addEventListener('click',()=>netPrompt.classList.remove('show'));
 netPromptGoOnline.addEventListener('click',()=>{ setNet('online'); netPrompt.classList.remove('show'); showToast('已连接网络，可重新点击「照片优化」'); });
 
 /* ============ 重置 ============ */
 resetBtn.addEventListener('click',()=>{
-  busy=false; procMask.classList.remove('show'); netPrompt.classList.remove('show'); detailPage.classList.remove('show'); albumPage.classList.remove('show');
+  busy=false; procMask.classList.remove('show'); manualErase.classList.remove('show'); netPrompt.classList.remove('show'); detailPage.classList.remove('show'); albumPage.classList.remove('show');
   thumb.classList.remove('show'); thumbSlot.classList.remove('show'); ringFg.style.strokeDashoffset=CIRC;
   seq=1; initAlbum(); currentLongPressItem=null; activeItem=null; setState('IDLE'); showToast('已重置');
 });
